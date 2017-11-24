@@ -1,40 +1,111 @@
 <template>
-<div>
-<input class="form-control" id="inputEmail3" placeholder="请输入账号" v-model="account">
-<input type="password" class="form-control" id="inputPassword3" placeholder="请输入密码" v-model="password">
-<button type="submit" class="btn btn-default" @click="login">登录</button>
-</div>
+  <div class="search">
+    <div class="search-box-wrapper">
+      <searchBox ref="searchBox" @query="onQueryChange"></searchBox>
+    </div>     
+    <div class="shortcut-wrapper" v-show="!query">
+      <div class="shortcut">
+        <div class="hot-key">
+          <h1 class="title">热门搜索</h1>
+          <ul>
+            <li @click="addQuery(item.k)" class="item" v-for="item in hotKey">
+              <span>{{item.k}}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="search-result" v-show="query">
+      <suggest :query="query"></suggest>
+    </div>
+  </div>
 </template>
 
 <script>
+import searchBox from '../../base/search-box/search-box.vue'
+import suggest from '../suggest/suggest.vue'
+import {getHotKey} from '../../api/search.js'
+import {ERR_OK} from '../../api/config.js'
     export default {
-    data() {
-        return {
-            account : '',
-            password : ''
+      components:{
+        searchBox,
+        suggest
+      },
+      created(){
+        this._getHotKey()
+      },
+      data(){
+        return{
+          hotKey:[],
+          query:''
         }
-    },
-    methods:{
-      login() {
-        // 获取已有账号密码
-        this.$http.get('/api/login/getAccount')
-          .then((response) => {
-            // 响应成功回调
-            console.log(response)
-            let params = { 
-              account : this.account,
-              password : this.password
-            };
-            // 创建一个账号密码
-            return this.$http.post('/api/login/createAccount',params);
-          })
-          .then((response) => {
-            console.log(response)
-          })
-          .catch((reject) => {
-            console.log(reject)
-          });
-        }
+      },
+      methods:{
+        _getHotKey(){
+          getHotKey().then((res)=>{
+            if(res.code === ERR_OK){
+              this.hotKey = res.data.hotkey.slice(0, 10)
+            }
+        })
+      },
+      addQuery(query){
+        this.$refs.searchBox.setQuery(query)
+      },
+      onQueryChange(query){
+        this.query = query
+      }
       }
     }
 </script>
+
+<style lang="stylus">
+@import "../../common/stylus/variable.styl"
+@import "../../common/stylus/mixin.styl"
+.search
+    .search-box-wrapper
+      margin: 20px
+    .shortcut-wrapper
+      position: fixed
+      top: 178px
+      bottom: 0
+      width: 100%
+      .shortcut
+        height: 100%
+        overflow: hidden
+        .hot-key
+          margin: 0 20px 20px 20px
+          .title
+            margin-bottom: 20px
+            font-size: $font-size-medium
+            color: $color-text-l
+          .item
+            display: inline-block
+            padding: 5px 10px
+            margin: 0 20px 10px 0
+            border-radius: 6px
+            background: $color-highlight-background
+            font-size: $font-size-medium
+            color: $color-text-d
+        .search-history
+          position: relative
+          margin: 0 20px
+          .title
+            display: flex
+            align-items: center
+            height: 40px
+            font-size: $font-size-medium
+            color: $color-text-l
+            .text
+              flex: 1
+            .clear
+              extend-click()
+              .icon-clear
+                font-size: $font-size-medium
+                color: $color-text-d
+    .search-result
+      position: fixed
+      width: 100%
+      top: 178px
+      bottom: 0
+
+</style>

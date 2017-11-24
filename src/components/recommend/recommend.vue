@@ -133,6 +133,7 @@ export default {
             flex: 0 0 60px
             width: 60px
             padding-right: 20px
+            transform s
           .text
             display: flex
             flex-direction: column

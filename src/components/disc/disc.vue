@@ -24,9 +24,14 @@ export default {
   },
   methods:{
       _getSongList(){
-          getSongList(this.disc.disstid).then((res) => {
+          if(!this.disc.dissid){
+              this.$router.push('/recommend')
+              return
+          }
+          getSongList(this.disc.dissid).then((res) => {
               if(res.code === ERR_OK) {
                 this.songs = this._normalizeSongs(res.cdlist[0].songlist)
+                // console.log(res.cdlist[0].songlist)
               }
           })
       },
@@ -57,7 +62,7 @@ export default {
 <style lang="stylus">
 .slide-enter-active, .slide-leave-active
     transition all 0.3s
-.slide-enter-, .slide-leave-to
-    transform :translate3d(100%,0,0)
+.slide-enter, .slide-leave-to
+    transform translate3d(100%,0,0)
 </style>
 
